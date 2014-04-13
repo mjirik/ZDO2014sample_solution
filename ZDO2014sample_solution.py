@@ -3,7 +3,7 @@
 
 # <codecell>
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import skimage
 import skimage.feature
 dir(skimage.feature)
@@ -15,8 +15,10 @@ import skimage.transform
 import glob
 import os
 import numpy as np
-import urllib
+#import urllib
 import pickle
+import sklearn
+import sklearn.naive_bayes
 
 
 class Znacky:
@@ -24,26 +26,34 @@ class Znacky:
     M. Jiřík
     I. Pirner
     P. Zimmermann
-    Takto bude vytvořeno vaše řešení. Musí obsahovat funkci 'rozpoznejZnacku()',
-    která má jeden vstupní parametr. Tím je obraz. Doba trváná funkce je
-    omezena na 1 sekundu.
+    Takto bude vytvořeno vaše řešení. Musí obsahovat funkci
+    'rozpoznejZnacku()', která má jeden vstupní parametr. Tím je obraz. Doba
+    trváná funkce je omezena na 1 sekundu.
     #"""
-    def __init__(self ):
+    def __init__(self):
         print "konstruktor"
-        self.colorFeatures = False
-        self.hogFeatures = False
+        # Toto mi umožňuje zapínat a vypínat různé části příznakového vektoru
         self.grayLevelFeatures = True
-        path_to_script = os.path.dirname(os.path.abspath(__file__))
-        classifier_path = os.path.join(path_to_script,  "ZDO2014sample_solution.pkl")
+        self.colorFeatures = False  # roz
+        self.hogFeatures = False
+        self.labels = None
+
         # Načítání natrénovaných parametrů klasifikátoru ze souboru atd.
-        print classifier_path
+        path_to_script = os.path.dirname(os.path.abspath(__file__))
+        classifier_path = os.path.join(path_to_script,
+                                       "ZDO2014sample_solution.pkl")
         try:
-            self.clf = pickle.load(open(classifier_path,  "rb" ) )
+            saved = pickle.load(open(classifier_path,  "rb"))
+            self.clf = saved[0]
+            self.labels = saved[1]
         except:
             print "Problems with file " + "ZDO2014sample_solution.pkl"
         pass
 
     def one_file_features(self, im):
+        """
+        Zde je kontruován vektor příznaků pro klasfikátor
+        """
         # color processing
         fd = np.array([])
 
@@ -53,20 +63,20 @@ class Znacky:
             pass
 
         if self.grayLevelFeatures:
-            glfd = skimage.transform.resize(img, [10,10]).reshape(-1)
+            glfd = skimage.transform.resize(img, [10, 10]).reshape(-1)
             fd = np.append(fd, glfd)
 
         #fd.append(hsvft[:])
         if self.colorFeatures:
-            fd = np.append(fd, colorft)
+            #fd = np.append(fd, colorft)
+            pass
 
         #print hog_image
         return fd
 
-
     # nacitani z adresare
     def readImageDir(self, path):
-        dirs = glob.glob(os.path.join(os.path.normpath(path) ,'*'))
+        dirs = glob.glob(os.path.join(os.path.normpath(path), '*'))
         labels = []
         #nlabels = []
         files = []
@@ -86,71 +96,63 @@ class Znacky:
         return files, labels
 
     def train(self, datadir='/home/mjirik/data/zdo2014/zdo2014-training/'):
-        files, labels = self.readImageDir(datadir)
+        tfiles, tlabels = self.readImageDir(datadir)
 
         # trénování by trvalo dlouho, tak si beru jen každý stý obrázek
-        files = files[::100]
-        labels = labels[::100]
+        tfiles = tfiles[::20]
+        tlabels = tlabels[::20]
 
         featuresAll = []
         i = 0
 
-        for fl in files:
+        for fl in tfiles:
             i = i + 1
             print i
             im = skimage.io.imread(fl)
             fv = self.one_file_features(im)
             featuresAll.append(fv)
 
-
         featuresAll = np.array(featuresAll)
-        #print 'ft all ', featuresAll
 
         # Trénování klasifikátoru
 
-        from sklearn import svm
+        labels, inds = np.unique(tlabels, return_inverse=True)
 
-        unlabels, inds = np.unique(labels, return_inverse=True)
+        #from sklearn import svm
+        #clf = svm.SVC()
+        clf = sklearn.naive_bayes.GaussianNB()
 
-        clf = svm.SVC()
         clf.fit(featuresAll, inds)
-
+        self.clf = clf
+        self.labels = labels
 
         # ulozime do souboru pomocí modulu pickle
-
         # https://wiki.python.org/moin/UsingPickle
 
-        import pickle
-        pickle.dump(clf, open( "ZDO2014sample_solution.pkl", "wb" ))
-
-
+        # je potřeba zachovat i původní labely
+        saved = [clf, labels]
+        pickle.dump(saved, open("ZDO2014sample_solution.pkl", "wb"))
 
     def rozpoznejZnacku(self, image):
 
         # Nějaký moc chytrý kód
 
-        retval = self.clf.predict(self.one_file_features(image))
-        print retval
+        class_index = self.clf.predict(self.one_file_features(image))
+        # tady převedeme číselnou hodnotu do textového popisku
+        retval = self.labels[class_index]
 
         return retval
 
-
-
-
-
-
 # <codecell>
 
-
 # následující zápis zařídí spuštění při volání z příkazové řádky.
-# Pokud bude modul jen includován, tato část se nespustí. To je požadované chování
+# Pokud bude modul jen includován, tato část se nespustí. To je požadované
+# chování
 if __name__ == "__main__":
-    zn = Znacky(params_online=False)
+    zn = Znacky()
     zn.train()
 
-    clf = pickle.load(open( "ZDO2014sample_solution.pkl", "rb" ) )
 
 # <codecell>
 
 #print clf
-
