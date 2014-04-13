@@ -129,7 +129,8 @@ class Znacky:
 
         # Nějaký moc chytrý kód
 
-        self.clf.predict(self.one_file_features(image))
+        retval = self.clf.predict(self.one_file_features(image))
+        print retval
 
         return retval
 
