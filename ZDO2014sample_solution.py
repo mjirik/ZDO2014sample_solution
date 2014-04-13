@@ -34,8 +34,9 @@ class Znacky:
         self.hogFeatures = False
         self.grayLevelFeatures = True
         path_to_script = os.path.dirname(os.path.abspath(__file__))
-        classifier_path = os.path.join(path_to_script,  "ZDO2014sample_solution_online.pkl")
+        classifier_path = os.path.join(path_to_script,  "ZDO2014sample_solution.pkl")
         # Načítání natrénovaných parametrů klasifikátoru ze souboru atd.
+        print classifier_path
         try:
             self.clf = pickle.load(open(classifier_path,  "rb" ) )
         except:
