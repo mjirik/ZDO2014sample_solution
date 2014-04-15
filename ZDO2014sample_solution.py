@@ -146,7 +146,7 @@ class Znacky:
         # tady převedeme číselnou hodnotu do textového popisku
         retval = self.labels[class_index]
 
-        return retval
+        return retval[0]
 
 # <codecell>
 
