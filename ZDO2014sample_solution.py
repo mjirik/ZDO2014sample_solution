@@ -3,7 +3,7 @@
 
 # <codecell>
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import skimage
 import skimage.feature
 dir(skimage.feature)
@@ -28,13 +28,13 @@ class Znacky:
     P. Zimmermann
     Takto bude vytvořeno vaše řešení. Musí obsahovat funkci
     'rozpoznejZnacku()', která má jeden vstupní parametr. Tím je obraz. Doba
-    trváná funkce je omezena na 1 sekundu.
+    trváná funkce je omezena na 1 sekundu. Tato funkce rovněž musí obsahovat 
+    ukázkový režim. V něm je pomocí obrázků vysvětleno, jak celá věc pracuje.
     #"""
     def __init__(self):
-        print "konstruktor"
         # Toto mi umožňuje zapínat a vypínat různé části příznakového vektoru
         self.grayLevelFeatures = True
-        self.colorFeatures = False  # roz
+        self.colorFeatures = False  # rozpoznávání podle barvy
         self.hogFeatures = False
         self.labels = None
 
@@ -50,7 +50,7 @@ class Znacky:
             print "Problems with file " + "ZDO2014sample_solution.pkl"
         pass
 
-    def one_file_features(self, im):
+    def one_file_features(self, im, demo=False):
         """
         Zde je kontruován vektor příznaků pro klasfikátor
         """
@@ -63,8 +63,13 @@ class Znacky:
             pass
 
         if self.grayLevelFeatures:
-            glfd = skimage.transform.resize(img, [10, 10]).reshape(-1)
+            imr = skimage.transform.resize(img, [10, 10])
+            glfd = imr.reshape(-1)
             fd = np.append(fd, glfd)
+            
+            if demo:
+                plt.imshow(imr)
+                plt.show()
 
         #fd.append(hsvft[:])
         if self.colorFeatures:
@@ -133,11 +138,11 @@ class Znacky:
         saved = [clf, labels]
         pickle.dump(saved, open("ZDO2014sample_solution.pkl", "wb"))
 
-    def rozpoznejZnacku(self, image):
+    def rozpoznejZnacku(self, image, demo=False):
 
         # Nějaký moc chytrý kód
 
-        class_index = self.clf.predict(self.one_file_features(image))
+        class_index = self.clf.predict(self.one_file_features(image, demo))
         # tady převedeme číselnou hodnotu do textového popisku
         retval = self.labels[class_index]
 
