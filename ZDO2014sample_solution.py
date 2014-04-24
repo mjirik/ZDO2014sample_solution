@@ -19,10 +19,12 @@ import numpy as np
 import pickle
 import sklearn
 import sklearn.naive_bayes
+import time
 
 #Nastaveni logovani
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class Znacky:
@@ -69,7 +71,7 @@ class Znacky:
             pass
 
         if self.grayLevelFeatures:
-            imr = skimage.transform.resize(img, [10, 10])
+            imr = skimage.transform.resize(img, [9, 9])
             glfd = imr.reshape(-1)
             fd = np.append(fd, glfd)
 
@@ -109,9 +111,9 @@ class Znacky:
     def train(self, datadir='/home/mjirik/data/zdo2014/zdo2014-training/'):
         tfiles, tlabels = self.readImageDir(datadir)
 
-        # trénování by trvalo dlouho, tak si beru jen každý stý obrázek
-        tfiles = tfiles[::20]
-        tlabels = tlabels[::20]
+        # trénování by trvalo dlouho, tak si beru jen každý druhý obrázek
+        tfiles = tfiles[::2]
+        tlabels = tlabels[::2]
 
         featuresAll = []
         i = 0
@@ -154,6 +156,33 @@ class Znacky:
 
         return retval[0]
 
+    def kontrola(self, datadir=None):
+        """
+        Jednoduché vyhodnocení výsledků
+        """
+
+        obrazky, reseni = self.readImageDir(datadir)
+
+        vysledky = []
+
+        for i in range(0, len(obrazky)):
+            cas1 = time.clock()
+            im = skimage.io.imread(obrazky[i])
+            result = self.rozpoznejZnacku(im)
+
+            cas2 = time.clock()
+
+            if((cas2 - cas1) >= 1.0):
+                print "cas vyprsel"
+                result = 0
+
+            vysledky.append(result)
+
+        hodnoceni = np.array(reseni) == np.array(vysledky)
+        skore = np.sum(hodnoceni.astype(np.int)) / np.float(len(reseni))
+
+        print skore
+
 # <codecell>
 
 # následující zápis zařídí spuštění při volání z příkazové řádky.
@@ -161,7 +190,10 @@ class Znacky:
 # chování
 if __name__ == "__main__":
     zn = Znacky()
-    zn.train()
+# Natrenujeme na 3. sade
+    zn.train(datadir='/home/mjirik/data/zdo2014/zdo2014-training3/')
+# Otestujeme na 1. sade
+    zn.kontrola('/home/mjirik/data/zdo2014/zdo2014-training1/')
 
 
 # <codecell>
