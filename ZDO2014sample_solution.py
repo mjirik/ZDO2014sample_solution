@@ -55,7 +55,7 @@ class Znacky:
             # Ukazka logovani
             logger.debug("Ukazka loggovani, nacteni klasifikatoru ok")
         except:
-            print "Problems with file " + "ZDO2014sample_solution.pkl"
+            logger.error("Problems with file " + "ZDO2014sample_solution.pkl")
         pass
 
     def one_file_features(self, im, demo=False):
@@ -120,7 +120,7 @@ class Znacky:
 
         for fl in tfiles:
             i = i + 1
-            print i
+            logger.debug(i)
             im = skimage.io.imread(fl)
             fv = self.one_file_features(im)
             featuresAll.append(fv)
@@ -189,6 +189,7 @@ class Znacky:
 # Pokud bude modul jen includován, tato část se nespustí. To je požadované
 # chování
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     zn = Znacky()
 # Natrenujeme na 3. sade
     zn.train(datadir='/home/mjirik/data/zdo2014/zdo2014-training3/')
