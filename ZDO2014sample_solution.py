@@ -24,6 +24,7 @@ import sklearn.naive_bayes
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Znacky:
     """
     M. Jiřík
