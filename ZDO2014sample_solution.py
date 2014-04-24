@@ -20,6 +20,9 @@ import pickle
 import sklearn
 import sklearn.naive_bayes
 
+#Nastaveni logovani
+import logging
+logger = logging.getLogger(__name__)
 
 class Znacky:
     """
@@ -28,7 +31,7 @@ class Znacky:
     P. Zimmermann
     Takto bude vytvořeno vaše řešení. Musí obsahovat funkci
     'rozpoznejZnacku()', která má jeden vstupní parametr. Tím je obraz. Doba
-    trváná funkce je omezena na 1 sekundu. Tato funkce rovněž musí obsahovat 
+    trváná funkce je omezena na 1 sekundu. Tato funkce rovněž musí obsahovat
     ukázkový režim. V něm je pomocí obrázků vysvětleno, jak celá věc pracuje.
     #"""
     def __init__(self):
@@ -46,6 +49,8 @@ class Znacky:
             saved = pickle.load(open(classifier_path,  "rb"))
             self.clf = saved[0]
             self.labels = saved[1]
+            # Ukazka logovani
+            logger.debug("Ukazka loggovani, nacteni klasifikatoru ok")
         except:
             print "Problems with file " + "ZDO2014sample_solution.pkl"
         pass
@@ -66,7 +71,7 @@ class Znacky:
             imr = skimage.transform.resize(img, [10, 10])
             glfd = imr.reshape(-1)
             fd = np.append(fd, glfd)
-            
+
             if demo:
                 plt.imshow(imr)
                 plt.show()
